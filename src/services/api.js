@@ -1,39 +1,34 @@
 // src/api.js
 import axios from 'axios'
-import { API_BASE } from './config'   // ← new
+import { API_BASE } from './config'
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: `${API_BASE}/api`,        // ← use API_BASE, not hard-coded
-  withCredentials: true,             // Important for session cookies
+  baseURL: `${API_BASE}/api`,   // ← points to `${API_BASE}/api/...`
+  withCredentials: true,         // send cookies if you’re using sessions
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor to handle authentication
+// Request interceptor (if you need to inject auth tokens later)
 api.interceptors.request.use(
-  (config) => {
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (config) => config,
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor to handle errors
+// Response interceptor to catch 401s and redirect
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Redirect to login if unauthorized
       window.location.href = '/login'
     }
     return Promise.reject(error)
   }
 )
 
-// Authentication API calls
+// Auth endpoints
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login:    (credentials) => api.post('/auth/login', credentials),
@@ -42,7 +37,7 @@ export const authAPI = {
   checkAuth: () => api.get('/auth/check'),
 }
 
-// Students API calls
+// Student endpoints
 export const studentsAPI = {
   getAll:        () => api.get('/students'),
   add:           (data) => api.post('/students', data),
@@ -57,12 +52,12 @@ export const studentsAPI = {
                    api.post(`/students/${id}/purchase`, { item, cost }),
 }
 
-// Goals API calls
+// Goals endpoints
 export const goalsAPI = {
-  getCurrent:   () => api.get('/goals/current'),
+  getCurrent:    () => api.get('/goals/current'),
   updateCurrent: (goals) => api.put('/goals/current', { goals }),
-  getWeek:      (date) => api.get(`/goals/week/${date}`),
-  getWeeks:     () => api.get('/goals/weeks'),
+  getWeek:       (date) => api.get(`/goals/week/${date}`),
+  getWeeks:      () => api.get('/goals/weeks'),
 }
 
 export default api
