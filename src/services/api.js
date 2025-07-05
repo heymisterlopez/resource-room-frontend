@@ -1,6 +1,6 @@
 // src/api.js
 import axios from 'axios'
-import { API_BASE } from './config'
+import { API_BASE } from '../config'
 
 // Create axios instance with base configuration
 const api = axios.create({
