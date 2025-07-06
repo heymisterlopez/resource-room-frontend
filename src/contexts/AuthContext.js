@@ -52,31 +52,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => {
+  // inside AuthContext.js
+const register = async (userData) => {
   try {
-    // 1) Create the account, sending the required registrationCode
+    // Grab the code from env (or fallback)
+    const code = process.env.REACT_APP_REGISTRATION_CODE || 'TEACHER2024';
+
+    // 1) Call register endpoint with the correct code
     await authAPI.register({
-      ...userData,
-      registrationCode: process.env.REACT_APP_REGISTRATION_CODE
+      email: userData.email,
+      password: userData.password,
+      registrationCode: code
     });
 
-    // 2) Immediately log in to get a session cookie
+    // 2) Immediately log in to establish a session cookie
     const loginRes = await authAPI.login({
       email: userData.email,
       password: userData.password
     });
 
-    // 3) Update context
+    // 3) Update context state
     setTeacher(loginRes.data.teacher);
     setIsAuthenticated(true);
 
     return { success: true, data: loginRes.data };
   } catch (error) {
+    // surfacing the backend’s error message
     return {
       success: false,
       error:
         error.response?.data?.message ||
-        'Registration or login failed',
+        'Registration or login failed'
     };
   }
 };
