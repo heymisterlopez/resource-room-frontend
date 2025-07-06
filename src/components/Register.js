@@ -30,10 +30,14 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 🔍 Debug: log out exactly what fields you're sending
+    console.log('Submitting formData:', formData);
+
     setLoading(true);
     setError('');
 
-    // 1) Required fields (now including confirmPassword)
+    // 1) Required fields
     const { username, email, password, confirmPassword, firstName, lastName } = formData;
     if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
       setError('Please fill in all required fields');
