@@ -53,18 +53,33 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    try {
-      const response = await authAPI.register(userData);
-      setTeacher(response.data.teacher);
-      setIsAuthenticated(true);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
-      };
-    }
-  };
+  try {
+    // 1) Create the account, sending the required registrationCode
+    await authAPI.register({
+      ...userData,
+      registrationCode: process.env.REACT_APP_REGISTRATION_CODE
+    });
+
+    // 2) Immediately log in to get a session cookie
+    const loginRes = await authAPI.login({
+      email: userData.email,
+      password: userData.password
+    });
+
+    // 3) Update context
+    setTeacher(loginRes.data.teacher);
+    setIsAuthenticated(true);
+
+    return { success: true, data: loginRes.data };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error.response?.data?.message ||
+        'Registration or login failed',
+    };
+  }
+};
 
   const logout = async () => {
     try {
