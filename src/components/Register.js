@@ -1,9 +1,13 @@
+// src/pages/Register.js
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css'; // Reuse login styles
 
 const Register = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -11,21 +15,17 @@ const Register = () => {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    school: '',
-    registrationCode: ''
+    school: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData(f => ({
+      ...f,
       [e.target.name]: e.target.value
-    });
-    setError(''); // Clear error when user types
+    }));
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -33,38 +33,44 @@ const Register = () => {
     setLoading(true);
     setError('');
 
-    // Validation
-    if (!formData.username || !formData.email || !formData.password || 
-        !formData.firstName || !formData.lastName || !formData.registrationCode) {
+    // 1) Required fields (now including confirmPassword)
+    const { username, email, password, confirmPassword, firstName, lastName } = formData;
+    if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
       setError('Please fill in all required fields');
       setLoading(false);
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // 2) Passwords match
+    if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
+    // 3) Minimum length
+    if (password.length < 6) {
       setError('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
 
-    // Remove confirmPassword before sending to API
-    const { confirmPassword, ...registrationData } = formData;
+    // 4) Prepare data & inject registrationCode from env
+    const { confirmPassword: _, ...registrationData } = formData;
+    const payload = {
+      ...registrationData,
+      registrationCode: process.env.REACT_APP_REGISTRATION_CODE || 'TEACHER2024'
+    };
 
-    const result = await register(registrationData);
-    
+    // 5) Register + auto-login happens in AuthContext
+    const result = await register(payload);
+    setLoading(false);
+
     if (result.success) {
       navigate('/dashboard');
     } else {
       setError(result.error);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -96,7 +102,6 @@ const Register = () => {
                 disabled={loading}
               />
             </div>
-
             <div className="form-group">
               <label htmlFor="lastName">Last Name *</label>
               <input
@@ -163,7 +168,6 @@ const Register = () => {
                 disabled={loading}
               />
             </div>
-
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password *</label>
               <input
@@ -178,22 +182,6 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="registrationCode">Registration Code *</label>
-            <input
-              type="text"
-              id="registrationCode"
-              name="registrationCode"
-              value={formData.registrationCode}
-              onChange={handleChange}
-              placeholder="Contact your administrator for this code"
-              disabled={loading}
-            />
-            <small className="form-hint">
-              💡 Hint: The default code is TEACHER2024
-            </small>
-          </div>
-
           <button 
             type="submit" 
             className="login-button"
@@ -205,7 +193,7 @@ const Register = () => {
 
         <div className="login-footer">
           <p>
-            Already have an account? 
+            Already have an account?{' '}
             <Link to="/login" className="register-link">
               Sign in here
             </Link>
