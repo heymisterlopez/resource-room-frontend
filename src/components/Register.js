@@ -14,8 +14,7 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     firstName: '',
-    lastName: '',
-    school: ''
+    lastName: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,58 +30,46 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🔍 Debug: show the raw formData
     console.log('Submitting formData:', formData);
-
-    const {
-      username,
-      email,
-      password,
-      confirmPassword,
-      firstName,
-      lastName
-    } = formData;
-
-    // 🔍 Debug: show each destructured field
-    console.log({ username, email, firstName, lastName, password, confirmPassword });
 
     setLoading(true);
     setError('');
 
-    // ===== Temporarily disable the front-end validation =====
-    /*
+    // 1) Required fields
+    const { username, email, password, confirmPassword, firstName, lastName } = formData;
     if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
-      console.log('Validation failed:', { username, email, firstName, lastName, password, confirmPassword });
       setError('Please fill in all required fields');
       setLoading(false);
       return;
     }
 
+    // 2) Passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
+    // 3) Minimum length
     if (password.length < 6) {
       setError('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
-    */
-    // ========================================================
 
-    // Build the payload with registrationCode
-    const { confirmPassword: _, ...registrationData } = formData;
+    // 4) Build payload with only the fields the server expects
     const payload = {
-      ...registrationData,
+      username,
+      email,
+      password,
+      firstName,
+      lastName,
       registrationCode: process.env.REACT_APP_REGISTRATION_CODE || 'TEACHER2024'
     };
 
-    // 🔍 Debug: show the final payload
     console.log('Payload sent to register endpoint:', payload);
 
-    // Call register() which also auto-logs in
+    // 5) Register + auto-login
     const result = await register(payload);
     setLoading(false);
 
@@ -109,22 +96,29 @@ const Register = () => {
             </div>
           )}
 
-          {/* ... your inputs unchanged ... */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="firstName">First Name *</label>
               <input
-                type="text" id="firstName" name="firstName"
-                value={formData.firstName} onChange={handleChange}
-                placeholder="First name" disabled={loading}
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="First name"
+                disabled={loading}
               />
             </div>
             <div className="form-group">
               <label htmlFor="lastName">Last Name *</label>
               <input
-                type="text" id="lastName" name="lastName"
-                value={formData.lastName} onChange={handleChange}
-                placeholder="Last name" disabled={loading}
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="Last name"
+                disabled={loading}
               />
             </div>
           </div>
@@ -132,27 +126,26 @@ const Register = () => {
           <div className="form-group">
             <label htmlFor="username">Username *</label>
             <input
-              type="text" id="username" name="username"
-              value={formData.username} onChange={handleChange}
-              placeholder="Choose a username" disabled={loading}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Choose a username"
+              disabled={loading}
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="email">Email *</label>
             <input
-              type="email" id="email" name="email"
-              value={formData.email} onChange={handleChange}
-              placeholder="your.email@school.edu" disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="school">School/District</label>
-            <input
-              type="text" id="school" name="school"
-              value={formData.school} onChange={handleChange}
-              placeholder="School or district name" disabled={loading}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="your.email@school.edu"
+              disabled={loading}
             />
           </div>
 
@@ -160,17 +153,25 @@ const Register = () => {
             <div className="form-group">
               <label htmlFor="password">Password *</label>
               <input
-                type="password" id="password" name="password"
-                value={formData.password} onChange={handleChange}
-                placeholder="At least 6 characters" disabled={loading}
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="At least 6 characters"
+                disabled={loading}
               />
             </div>
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password *</label>
               <input
-                type="password" id="confirmPassword" name="confirmPassword"
-                value={formData.confirmPassword} onChange={handleChange}
-                placeholder="Confirm password" disabled={loading}
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm password"
+                disabled={loading}
               />
             </div>
           </div>
